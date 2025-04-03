@@ -1,41 +1,27 @@
 #!/bin/sh
 
-# Define an array of names (POSIX sh doesn't support arrays, so we use a space-separated string)
-names="Dad Mom Grandma Cousin Brother Sister Uncle Aunt Friend Neighbor Teacher Coach"
+# List of names as a space-separated string
+names="Mom Grandma Cousin Uncle Aunt Brother Sister Friend"
 
-# Generate a random number of commits between 1 and 3
-commit_count=$(( $(od -An -N1 -i /dev/random) % 3 + 1 ))
+# Randomly decide the number of commits (between 1 and 5)
+num_commits=$(shuf -i 1-5 -n1)
 
-echo "Executing $commit_count commit(s)..."
-
-i=1
-for name in $names; do
-  if [ $i -gt $commit_count ]; then
-    break
-  fi
-
-  # Select a random name from the list
-  set -- $names
-  random_index=$(( $(od -An -N1 -i /dev/random) % $# + 1 ))
-  random_name=$(eval echo \$$random_index)
-
-  # Append the greeting to streak.txt
-  echo "Hello $random_name!" >> streak.txt
-
-  # Stage changes and commit with a commit message indicating the commit number
-  git add .
-  git commit -m "Commit #$i: Hello $random_name!"
-
-  # Push the commit
-  git push
-
-  # Sleep for a random duration between 1 and 3 seconds before the next commit
-  if [ $i -lt $commit_count ]; then
-    sleep_time=$(( $(od -An -N1 -i /dev/random) % 3 + 1 ))
-    echo "Waiting $sleep_time second(s) before next commit..."
-    sleep $sleep_time
-  fi
-
-  i=$((i + 1))
-
+# Loop through the number of commits
+for i in $(seq 1 $num_commits); do
+    # Select a random name from the list
+    random_name=$(echo $names | tr ' ' '\n' | shuf -n1)
+    # Append the greeting to streak.txt
+    echo "Hello $random_name!" >> streak.txt
+    # Stage the changes
+    git add .
+    # Commit with the greeting as the message
+    git commit -m "Hello $random_name!"
+    # Add a random delay (1 or 3 seconds) if not the last commit
+    if [ $i -lt $num_commits ]; then
+        delay=$(shuf -e 1 3 -n1)
+        sleep $delay
+    fi
 done
+
+# Push all commits to the remote repository
+git push
