@@ -1,5 +1,3 @@
-#!/bin/bash
-
 echo "Hello Dad!" >> streak.txt
 
 git add .
